@@ -11,7 +11,7 @@ data "terraform_remote_state" "vpc" {
 module "eks" {
   source = "git::https://github.com/camilaqueiroz-mck/modules//eks_module"
   env = var.env
-  subnets_private_ids = data.terraform_remote_state.vpc.outputs.private_subnet_id
+  subnets_private_ids = data.terraform_remote_state.vpc.output.private_subnet_id
 }
 
 module "ecr" {
