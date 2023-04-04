@@ -9,7 +9,7 @@ terraform {
   
   backend "s3" {
     bucket = "grupo-rubi-bucket"
-    key    = "infrastructure/terraform.tfstate"
+    key    = "application/terraform.tfstate"
     region = "us-east-1"
   }
 }

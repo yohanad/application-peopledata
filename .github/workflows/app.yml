@@ -18,7 +18,6 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN_APP }}
-          role-session-name: ecr
           aws-region: us-east-1
       - name: Checkout
         uses: actions/checkout@v3
@@ -65,8 +64,8 @@ jobs:
   #         id: config-credentials
   #         uses: aws-actions/configure-aws-credentials@v1
   #         with:
-  #           role-to-assume: ${{ secrets.AWS_ROLE_ARN_GROUP_SILVER}}
-  #           aws-region: ${{ secrets.AWS_REGION }}
+  #           role-to-assume: ${{ secrets.AWS_ROLE_ARN_APP}}
+  #           aws-region: us-east-1
   #       - name: Login to Amazon ECR
   #         id: login-ecr
   #         uses: aws-actions/amazon-ecr-login@v1
@@ -74,8 +73,8 @@ jobs:
   #         id: build-image
   #         env:
   #           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-  #           ECR_REPOSITORY: ecr-grupo-prata
-  #           IMAGE_TAG: ecr-grupo-prata
+  #           ECR_REPOSITORY: "people-data"
+  #           IMAGE_TAG: ${{ github.sha }}
   #         run: |
   #           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
   #           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
