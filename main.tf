@@ -2,8 +2,8 @@ data "terraform_remote_state" "vpc" {
   backend = "s3"
   config = {
     bucket = "grupo-rubi-bucket"
-    # key    = "infrasctructure/${var.env}/terraform.tfstate"
-    key    = "infrasctructure/terraform.tfstate"
+    # key    = "infrastructure/${var.env}/terraform.tfstate"
+    key    = "infrastructure/terraform.tfstate"
     region = "us-east-1"
   }
 }

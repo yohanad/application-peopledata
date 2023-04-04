@@ -1,4 +1,4 @@
-name: Terraform
+name: Application
 
 on: 
   workflow_run:  
