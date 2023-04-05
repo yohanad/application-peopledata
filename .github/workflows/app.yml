@@ -53,7 +53,6 @@ jobs:
           with:
             node-version: '16'
             cache: 'npm'
-            cache-dependecy-path: app/package-lock.json
         - run: npm ci
         - run: npm test
         - name: Install Kubectl
