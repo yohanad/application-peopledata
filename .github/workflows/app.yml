@@ -1,10 +1,11 @@
 name: Application
 
 on: 
-  workflow_run:  
-    workflows: [tfsec]  
-    types:    
-      - completed
+  push:
+    branches:
+      - main
+    # types:    
+    #   - completed
 
 jobs:
   terraform:
@@ -21,24 +22,6 @@ jobs:
           aws-region: us-east-1
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Setup terraform
-        uses: hashicorp/setup-terraform@v2
-      - name: Terraform Init
-        id: init
-        run: terraform init
-      - name: Terraform Validate
-        id: validate
-        run: terraform validate -no-color
-      - name: Terraform Plan
-        id: plan
-        run: |
-          ls -la
-          terraform plan -var-file="dev.tfvars" -no-color
-      - name: Terraform Apply
-        id: apply
-        run: |
-          ls -la
-          terraform apply -var-file="dev.tfvars" -auto-approve
 
   image-deployment:
       permissions:
@@ -48,18 +31,6 @@ jobs:
       steps:
         - name: Checkout
           uses: actions/checkout@v3
-        - name: Set up node
-          uses: actions/setup-node@v3
-          with:
-            node-version: '16'
-            cache: 'npm'
-        - run: npm ci
-        - run: npm test
-        - name: Install Kubectl
-          uses: azure/setup-kubectl@v3
-          with:
-            version: 'v1.26.3'
-          id: install
         - name: Configure AWS Credentials
           id: config-credentials
           uses: aws-actions/configure-aws-credentials@v1
@@ -73,7 +44,7 @@ jobs:
           id: build-image
           env:
             ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-            ECR_REPOSITORY: "people-data"
+            ECR_REPOSITORY: "repository"
             IMAGE_TAG: ${{ github.sha }}
           run: |
             docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
