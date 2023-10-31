@@ -64,7 +64,7 @@ jobs:
             if [ -z "$LATEST_VERSION" ]; then
               NEW_TAG="v1"
             else
-              # Extract the version number and increment it
+              # Extract the version number (preserving 'v' prefix) and increment it
               VERSION_NUMBER=$(echo "$LATEST_VERSION" | sed 's/v//')
               NEXT_VERSION=$((VERSION_NUMBER + 1))
               NEW_TAG="v$NEXT_VERSION"
