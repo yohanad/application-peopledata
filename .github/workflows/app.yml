@@ -56,7 +56,7 @@ jobs:
           id: get-latest-version
           run: |
             LATEST_TAG=$(aws ecr describe-images --repository-name bw-repository --query 'images[].imageTag' --output text | sort -V | tail -n 1)
-            echo "::set-output name=latest_version::${LATEST_TAG}"
+            echo "{latest_version}={LATEST_TAG}" >> $GITHUB_OUTPUT
 
         - name: Generate new versioned tag
           id: generate-tag
