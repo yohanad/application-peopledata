@@ -58,11 +58,11 @@ jobs:
         - name: Increment tag number
           id: increment-tag
           run: |
-            if [ -z "${{ steps.get-latest-tag.outputs.latest_tag }}" ]; then
+            LATEST_TAG=${{ steps.get-latest-tag.outputs.latest_tag }}
+            if [ -z "$LATEST_TAG" ]; then
               NEXT_TAG="v1"
             else
-              LATEST_TAG="${{ steps.get-latest-tag.outputs.latest_tag }}"
-              NEXT_TAG="v$((${{ LATEST_TAG#v }} + 1))"
+              NEXT_TAG="v$((LATEST_TAG + 1))"
             fi
             echo "::set-output name=next_tag::${NEXT_TAG}"
         - name: Build, tag, and push image to Amazon ECR
