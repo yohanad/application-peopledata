@@ -53,7 +53,6 @@ jobs:
           id: get-latest-tag
           run: |
             LATEST_TAG=$(aws ecr describe-images --repository-name bw-repository --query 'images[].imageTag' --output text | sort -V | tail -n 1)
-            echo "Latest Tag: $LATEST_TAG"
             echo "::set-output name=latest_tag::$LATEST_TAG"
         - name: Increment tag number
           id: increment-tag
