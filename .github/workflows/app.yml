@@ -77,8 +77,8 @@ jobs:
             ECR_REPOSITORY: "bw-repository"
           run: |
             TIMESTAMP=${{ steps.set-timestamp.outputs.timestamp }}
-            docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.generate-tag.outputs.next_tag }}-$TIMESTAMP . 
-            docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.generate-tag.outputs.next_tag }}-$TIMESTAMP
+            docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.generate-tag.outputs.new_tag }}-$TIMESTAMP . 
+            docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.generate-tag.outputs.new_tag }}-$TIMESTAMP
 
 
 
