@@ -8,7 +8,7 @@ RUN echo '<!DOCTYPE html> \
     <title>Hello, World!</title> \
 </head> \
 <body> \
-    <h1>Hello, World! This is served using NGINX in a Docker container.</h1> \
+    <h1>Hello, World! This is served using NGINX in a Docker container.v2</h1> \
 </body> \
 </html>' > /usr/share/nginx/html/index.html
 
