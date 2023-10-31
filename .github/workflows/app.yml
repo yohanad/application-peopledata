@@ -55,7 +55,7 @@ jobs:
         - name: Get latest version from ECR
           id: get-latest-version
           run: |
-            LATEST_TAG=$(aws ecr describe-images --repository-name my-repo --query 'images[].imageTag' --output text | sort -V | tail -n 1)
+            LATEST_TAG=$(aws ecr describe-images --repository-name bw-repository --query 'images[].imageTag' --output text | sort -V | tail -n 1)
             echo "::set-output name=latest_version::${LATEST_TAG}"
 
         - name: Generate new versioned tag
