@@ -52,11 +52,12 @@ jobs:
         - name: Login to Amazon ECR
           id: login-ecr
           uses: aws-actions/amazon-ecr-login@v1
-        - name: Get latest tag from ECR
+        - name: Get latest version from ECR
           id: get-latest-version
           run: |
-            LATEST_TAG=$(aws ecr describe-images --repository-name bw-repository --query 'images[].imageTag' --output text | sort -V | tail -n 1)
-            echo "::set-output name=latest_tag::$LATEST_TAG"
+            LATEST_TAG=$(aws ecr describe-images --repository-name my-repo --query 'images[].imageTag' --output text | sort -V | tail -n 1)
+            echo "::set-output name=latest_version::${LATEST_TAG}"
+
         - name: Generate new versioned tag
           id: generate-tag
           run: |
@@ -64,7 +65,7 @@ jobs:
             if [ -z "$LATEST_VERSION" ]; then
               NEW_TAG="v1"
             else
-              # Extract the version number (preserving 'v' prefix) and increment it
+              # Extract the version number and increment it
               VERSION_NUMBER=$(echo "$LATEST_VERSION" | sed 's/v//')
               NEXT_VERSION=$((VERSION_NUMBER + 1))
               NEW_TAG="v$NEXT_VERSION"
