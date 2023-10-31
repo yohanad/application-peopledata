@@ -54,24 +54,27 @@ jobs:
           run: |
             LATEST_TAG=$(aws ecr describe-images --repository-name bw-repository --query 'images[].imageTag' --output text | sort -V | tail -n 1)
             echo "::set-output name=latest_tag::$LATEST_TAG"
-        - name: Increment tag number
-          id: increment-tag
+        - name: Generate new versioned tag
+          id: generate-tag
           run: |
-            LATEST_TAG=${{ steps.get-latest-tag.outputs.latest_tag }}
-            if [ -z "$LATEST_TAG" ]; then
-              NEXT_TAG="v1"
+            LATEST_VERSION=${{ steps.get-latest-version.outputs.latest_version }}
+            if [ -z "$LATEST_VERSION" ]; then
+              NEW_TAG="v1"
             else
-              NEXT_TAG="v$((LATEST_TAG + 1))"
+              # Extract the version number and increment it
+              VERSION_NUMBER=$(echo "$LATEST_VERSION" | sed 's/v//')
+              NEXT_VERSION=$((VERSION_NUMBER + 1))
+              NEW_TAG="v$NEXT_VERSION"
             fi
-            echo "::set-output name=next_tag::${NEXT_TAG}"
+            echo "::set-output name=new_tag::$NEW_TAG"
         - name: Build, tag, and push image to Amazon ECR
           id: build-image
           env:
             ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
             ECR_REPOSITORY: "bw-repository"
           run: |
-            docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.increment-tag.outputs.next_tag }} .
-            docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.increment-tag.outputs.next_tag }}
+            docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.increment-tag.outputs.next_tag }}-$(date -u +%Y%m%d%H%M%S) . 
+            docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.increment-tag.outputs.next_tag }}-$(date -u +%Y%m%d%H%M%S)
 
 
 
