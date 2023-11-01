@@ -56,7 +56,7 @@ jobs:
         - name: Get latest version from ECR
           id: get-latest-version
           run: |
-            LATEST_TAG=$(aws ecr describe-images --repository-name bw-repository --query '--query 'reverse(sort_by(imageDetails[?starts_with(imageTags[0], `APPCOOLNAME`)], &imagePushedAt))[0].{TagID:imageId,imageTag:imageTags[0]}' --output text)
+            LATEST_TAG=$(aws ecr describe-images   --repository-name bw-repository --query 'reverse(sort_by(imageDetails[?starts_with(imageTags[0], `APPCOOLNAME`)], &imagePushedAt))[0].{imageTag:imageTags[0]}' --output text)
             echo "::set-output name=latest_tag::$LATEST_TAG"
 
         - name: Set up Python
