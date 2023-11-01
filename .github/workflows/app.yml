@@ -68,6 +68,8 @@ jobs:
             
         - name: Print Version Number
           run: echo "Extracted Version: ${{ steps.extract-version-number.outputs.version_number }}"
+
+        
         # - name: Generate new versioned tag
         #   id: generate-tag
         #   run: |
