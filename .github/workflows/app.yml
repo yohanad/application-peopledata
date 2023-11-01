@@ -40,9 +40,6 @@ jobs:
       steps:
         - name: Checkout
           uses: actions/checkout@v3
-        - name: Set timestamp
-          id: set-timestamp
-          run: echo "::set-output name=timestamp::$(date -u +%Y%m%d%H%M%S)"
         - name: Configure AWS Credentials
           id: config-credentials
           uses: aws-actions/configure-aws-credentials@v1
@@ -52,9 +49,11 @@ jobs:
         - name: Login to Amazon ECR
           id: login-ecr
           uses: aws-actions/amazon-ecr-login@v1
-
         - name: Get latest version from ECR
+        # Change repository-name; APPCOOLNAME
+        # PS: App names must be differents
           id: get-latest-version
+          # Sort by push date, filter by app name and get image tag
           run: |
             LATEST_TAG=$(aws ecr describe-images   --repository-name bw-repository --query 'reverse(sort_by(imageDetails[?starts_with(imageTags[0], `APPCOOLNAME`)], &imagePushedAt))[0].imageTags[0]' --output text)
             echo "::set-output name=latest_tag::$LATEST_TAG"
@@ -86,8 +85,8 @@ jobs:
             ECR_REPOSITORY: "bw-repository"
           run: |
             TIMESTAMP=${{ steps.set-timestamp.outputs.timestamp }}
-            docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:APPCOOLNAME${{ steps.generate-tag.outputs.new_tag }}-$TIMESTAMP . 
-            docker push $ECR_REGISTRY/$ECR_REPOSITORY:APPCOOLNAME${{ steps.generate-tag.outputs.new_tag }}-$TIMESTAMP
+            docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:APPCOOLNAME-${{ steps.generate-tag.outputs.new_tag }} . 
+            docker push $ECR_REGISTRY/$ECR_REPOSITORY:APPCOOLNAME-${{ steps.generate-tag.outputs.new_tag }}
 
 
 
