@@ -58,17 +58,16 @@ jobs:
           run: |
             LATEST_TAG=$(aws ecr describe-images   --repository-name bw-repository --query 'reverse(sort_by(imageDetails[?starts_with(imageTags[0], `APPCOOLNAME`)], &imagePushedAt))[0].imageTags[0]' --output text)
             echo "::set-output name=latest_tag::$LATEST_TAG"
-
-        - name: Set up Python
-          uses: actions/setup-python@v2
-          with:
-            python-version: 3.8  # You can specify the Python version you need
-
-        - name: Run Python script
+          
+        - name: Extract Version Number from Tag
+          id: extract-version-number
           run: |
-             echo 'APPCOOLNAMEv1-20231031225443'
-             python -c "import re; import sys; print(re.search(r'v(\d+)', sys.stdin.read()).group(1))"
-
+            TAG_WITH_V=$(echo "${{ steps.get-latest-version.outputs.latest_tag }}")
+            VERSION_NUMBER=$(echo "$TAG_WITH_V" | sed -n 's/.*v\([0-9]\+\).*/\1/p')
+            echo "::set-output name=version_number::$VERSION_NUMBER"
+            
+        - name: Print Version Number
+          run: echo "Extracted Version: ${{ steps.extract-version-number.outputs.version_number }}"
         # - name: Generate new versioned tag
         #   id: generate-tag
         #   run: |
