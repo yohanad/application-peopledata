@@ -66,8 +66,8 @@ jobs:
             VERSION_NUMBER=$(echo "$TAG_WITH_V" | sed -n 's/.*v\([0-9]\+\).*/\1/p')
             echo "::set-output name=version_number::$VERSION_NUMBER"
             
-        - name: Print Version Number
-          run: echo "Extracted Version: ${{ steps.extract-version-number.outputs.version_number }}"
+        # - name: Print Version Number
+        #   run: echo "Extracted Version: ${{ steps.extract-version-number.outputs.version_number }}"
 
         
         # - name: Generate new versioned tag
