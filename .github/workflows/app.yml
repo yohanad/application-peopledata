@@ -52,34 +52,58 @@ jobs:
         - name: Login to Amazon ECR
           id: login-ecr
           uses: aws-actions/amazon-ecr-login@v1
+
         - name: Get latest version from ECR
           id: get-latest-version
           run: |
-            LATEST_TAG=$(aws ecr describe-images --repository-name bw-repository --query 'images[].imageTag' --output text | sort -V | tail -n 1)
-            echo "{latest_version}={LATEST_TAG}" >> $GITHUB_OUTPUT
+            LATEST_TAG=$(aws ecr describe-images --repository-name bw-repository --query '--query 'reverse(sort_by(imageDetails[?starts_with(imageTags[0], `APPCOOLNAME`)], &imagePushedAt))[0].{TagID:imageId,imageTag:imageTags[0]}' --output text)
+            echo "::set-output name=latest_tag::$LATEST_TAG"
 
-        - name: Generate new versioned tag
-          id: generate-tag
+        - name: Set up Python
+          uses: actions/setup-python@v2
+          with:
+            python-version: 3.8  # You can specify the Python version you need
+
+        - name: Run Python script
           run: |
-            LATEST_VERSION=${{ steps.get-latest-version.outputs.latest_version }}
-            if [ -z "$LATEST_VERSION" ]; then
-              NEW_TAG="v1"
-            else
-              # Extract the version number and increment it
-              VERSION_NUMBER=$(echo "$LATEST_VERSION" | sed 's/v//')
-              NEXT_VERSION=$((VERSION_NUMBER + 1))
-              NEW_TAG="v$NEXT_VERSION"
-            fi
-            echo "::set-output name=new_tag::$NEW_TAG"
-        - name: Build, tag, and push image to Amazon ECR
-          id: build-image
-          env:
-            ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-            ECR_REPOSITORY: "bw-repository"
-          run: |
-            TIMESTAMP=${{ steps.set-timestamp.outputs.timestamp }}
-            docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:APPCOOLNAME${{ steps.generate-tag.outputs.new_tag }}-$TIMESTAMP . 
-            docker push $ECR_REGISTRY/$ECR_REPOSITORY:APPCOOLNAME${{ steps.generate-tag.outputs.new_tag }}-$TIMESTAMP
+            python - <<EOF
+            import json
+
+            # Your JSON string
+            json_string = ${{ steps.get-latest-version.latest_tag }}
+
+            # Parse the JSON string
+            data = json.loads(json_string)
+
+            # Extract version number from the imageTag
+            image_tag = data["imageTag"]
+            version = image_tag.split("v")[1].split("-")[0]
+
+            print("Version:", version)
+            EOF
+
+        # - name: Generate new versioned tag
+        #   id: generate-tag
+        #   run: |
+        #     LATEST_VERSION=${{ steps.get-latest-version.outputs.latest_version }}
+        #     if [ -z "$LATEST_VERSION" ]; then
+        #       NEW_TAG="v1"
+        #     else
+        #       # Extract the version number and increment it
+        #       VERSION_NUMBER=$(echo "$LATEST_VERSION" | sed 's/v//')
+        #       NEXT_VERSION=$((VERSION_NUMBER + 1))
+        #       NEW_TAG="v$NEXT_VERSION"
+        #     fi
+        #     echo "::set-output name=new_tag::$NEW_TAG"
+        # - name: Build, tag, and push image to Amazon ECR
+        #   id: build-image
+        #   env:
+        #     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        #     ECR_REPOSITORY: "bw-repository"
+        #   run: |
+        #     TIMESTAMP=${{ steps.set-timestamp.outputs.timestamp }}
+        #     docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:APPCOOLNAME${{ steps.generate-tag.outputs.new_tag }}-$TIMESTAMP . 
+        #     docker push $ECR_REGISTRY/$ECR_REPOSITORY:APPCOOLNAME${{ steps.generate-tag.outputs.new_tag }}-$TIMESTAMP
 
 
 
