@@ -1,0 +1,26 @@
+name: push-image-to-ecr
+run-name: push-image-to-ecr${{ github.run_id }}
+
+on: 
+    push:
+      branches:
+        - main
+
+    workflow_dispatch: 
+
+jobs: 
+  build:
+    name: Build
+    uses: McK-Internal/build-by-mckinsey-devops/.github/workflows/push-image-ecr.yaml@BWALLET-902-Create-a-pipeline-template-in-Build-by-Mckinsey-Repo
+    with:
+      github-workflow: ${{ github.workflow }}
+      github-ref: ${{ github.ref_name }}
+      github-event-name: ${{ github.event_name }}
+      working-directory: '.'
+      version: v1.0.${{ github.run_id }}
+      repository-name: 'bw-repository'
+      app-name: 'APPCOOLNAME'
+
+    secrets:
+      aws-access-key: ${{ secrets.AWS_ACCESS_KEY }}
+      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

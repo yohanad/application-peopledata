@@ -1,92 +1,92 @@
-name: Application
+# name: Application
 
-on: 
-  push:
-    branches:
-      - main
-    # types:    
-    #   - completed
+# on: 
+#   push:
+#     branches:
+#       - main
+#     # types:    
+#     #   - completed
 
-jobs:
-  terraform:
-    permissions:
-      id-token: write
-      contents: read
-    name: 'Terraform'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN_APP }}
-          aws-region: us-east-1
-      - name: Checkout
-        uses: actions/checkout@v3
+# jobs:
+#   terraform:
+#     permissions:
+#       id-token: write
+#       contents: read
+#     name: 'Terraform'
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Configure AWS credentials
+#         uses: aws-actions/configure-aws-credentials@v1
+#         with:
+#           role-to-assume: ${{ secrets.AWS_ROLE_ARN_APP }}
+#           aws-region: us-east-1
+#       - name: Checkout
+#         uses: actions/checkout@v3
 
-# Change to this
-# - name: Set up AWS CLI
-#       uses: aws-actions/configure-aws-credentials@v1
-#       with:
-#         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#         aws-region: us-west-1 # Change this to your desired AWS region
+# # Change to this
+# # - name: Set up AWS CLI
+# #       uses: aws-actions/configure-aws-credentials@v1
+# #       with:
+# #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+# #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+# #         aws-region: us-west-1 # Change this to your desired AWS region
 
 
-  image-deployment:
-      permissions:
-        id-token: write
-        contents: read
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout
-          uses: actions/checkout@v3
-        - name: Configure AWS Credentials
-          id: config-credentials
-          uses: aws-actions/configure-aws-credentials@v1
-          with:
-            role-to-assume: ${{ secrets.AWS_ROLE_ARN_APP}}
-            aws-region: us-east-1
-        - name: Login to Amazon ECR
-          id: login-ecr
-          uses: aws-actions/amazon-ecr-login@v1
-        - name: Get latest version from ECR
-        # Change repository-name; APPCOOLNAME
-        # PS: App names must be differents
-          id: get-latest-version
-          # Sort by push date, filter by app name and get image tag
-          run: |
-            LATEST_TAG=$(aws ecr describe-images   --repository-name bw-repository --query 'reverse(sort_by(imageDetails[?starts_with(imageTags[0], `APPCOOLNAME`)], &imagePushedAt))[0].imageTags[0]' --output text)
-            echo "::set-output name=latest_tag::$LATEST_TAG"
+#   image-deployment:
+#       permissions:
+#         id-token: write
+#         contents: read
+#       runs-on: ubuntu-latest
+#       steps:
+#         - name: Checkout
+#           uses: actions/checkout@v3
+#         - name: Configure AWS Credentials
+#           id: config-credentials
+#           uses: aws-actions/configure-aws-credentials@v1
+#           with:
+#             role-to-assume: ${{ secrets.AWS_ROLE_ARN_APP}}
+#             aws-region: us-east-1
+#         - name: Login to Amazon ECR
+#           id: login-ecr
+#           uses: aws-actions/amazon-ecr-login@v1
+#         - name: Get latest version from ECR
+#         # Change repository-name; APPCOOLNAME
+#         # PS: App names must be differents
+#           id: get-latest-version
+#           # Sort by push date, filter by app name and get image tag
+#           run: |
+#             LATEST_TAG=$(aws ecr describe-images   --repository-name bw-repository --query 'reverse(sort_by(imageDetails[?starts_with(imageTags[0], `APPCOOLNAME`)], &imagePushedAt))[0].imageTags[0]' --output text)
+#             echo "::set-output name=latest_tag::$LATEST_TAG"
           
-        - name: Extract Version Number from Tag
-          id: extract-version-number
-          run: |
-            TAG_WITH_V=$(echo "${{ steps.get-latest-version.outputs.latest_tag }}")
-            VERSION_NUMBER=$(echo "$TAG_WITH_V" | sed -n 's/.*v\([0-9]\+\).*/\1/p')
-            echo "::set-output name=version_number::$VERSION_NUMBER"
+#         - name: Extract Version Number from Tag
+#           id: extract-version-number
+#           run: |
+#             TAG_WITH_V=$(echo "${{ steps.get-latest-version.outputs.latest_tag }}")
+#             VERSION_NUMBER=$(echo "$TAG_WITH_V" | sed -n 's/.*v\([0-9]\+\).*/\1/p')
+#             echo "::set-output name=version_number::$VERSION_NUMBER"
             
-        - name: Generate new versioned tag
-          id: generate-tag
-          run: |
-            LATEST_VERSION=${{ steps.extract-version-number.outputs.version_number }}
-            if [ -z "$LATEST_VERSION" ]; then
-              NEW_TAG="v1"
-            else
-              # Extract the version number and increment it
-              VERSION_NUMBER=$(echo "$LATEST_VERSION" | sed 's/v//')
-              NEXT_VERSION=$((VERSION_NUMBER + 1))
-              NEW_TAG="v$NEXT_VERSION"
-            fi
-            echo "::set-output name=new_tag::$NEW_TAG"
-        - name: Build, tag, and push image to Amazon ECR
-          id: build-image
-          env:
-            ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-            ECR_REPOSITORY: "bw-repository"
-          run: |
-            TIMESTAMP=${{ steps.set-timestamp.outputs.timestamp }}
-            docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:APPCOOLNAME-${{ steps.generate-tag.outputs.new_tag }} . 
-            docker push $ECR_REGISTRY/$ECR_REPOSITORY:APPCOOLNAME-${{ steps.generate-tag.outputs.new_tag }}
+#         - name: Generate new versioned tag
+#           id: generate-tag
+#           run: |
+#             LATEST_VERSION=${{ steps.extract-version-number.outputs.version_number }}
+#             if [ -z "$LATEST_VERSION" ]; then
+#               NEW_TAG="v1"
+#             else
+#               # Extract the version number and increment it
+#               VERSION_NUMBER=$(echo "$LATEST_VERSION" | sed 's/v//')
+#               NEXT_VERSION=$((VERSION_NUMBER + 1))
+#               NEW_TAG="v$NEXT_VERSION"
+#             fi
+#             echo "::set-output name=new_tag::$NEW_TAG"
+#         - name: Build, tag, and push image to Amazon ECR
+#           id: build-image
+#           env:
+#             ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+#             ECR_REPOSITORY: "bw-repository"
+#           run: |
+#             TIMESTAMP=${{ steps.set-timestamp.outputs.timestamp }}
+#             docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:APPCOOLNAME-${{ steps.generate-tag.outputs.new_tag }} . 
+#             docker push $ECR_REGISTRY/$ECR_REPOSITORY:APPCOOLNAME-${{ steps.generate-tag.outputs.new_tag }}
 
 
 
