@@ -66,32 +66,28 @@ jobs:
             VERSION_NUMBER=$(echo "$TAG_WITH_V" | sed -n 's/.*v\([0-9]\+\).*/\1/p')
             echo "::set-output name=version_number::$VERSION_NUMBER"
             
-        # - name: Print Version Number
-        #   run: echo "Extracted Version: ${{ steps.extract-version-number.outputs.version_number }}"
-
-        
-        # - name: Generate new versioned tag
-        #   id: generate-tag
-        #   run: |
-        #     LATEST_VERSION=${{ steps.get-latest-version.outputs.latest_version }}
-        #     if [ -z "$LATEST_VERSION" ]; then
-        #       NEW_TAG="v1"
-        #     else
-        #       # Extract the version number and increment it
-        #       VERSION_NUMBER=$(echo "$LATEST_VERSION" | sed 's/v//')
-        #       NEXT_VERSION=$((VERSION_NUMBER + 1))
-        #       NEW_TAG="v$NEXT_VERSION"
-        #     fi
-        #     echo "::set-output name=new_tag::$NEW_TAG"
-        # - name: Build, tag, and push image to Amazon ECR
-        #   id: build-image
-        #   env:
-        #     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        #     ECR_REPOSITORY: "bw-repository"
-        #   run: |
-        #     TIMESTAMP=${{ steps.set-timestamp.outputs.timestamp }}
-        #     docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:APPCOOLNAME${{ steps.generate-tag.outputs.new_tag }}-$TIMESTAMP . 
-        #     docker push $ECR_REGISTRY/$ECR_REPOSITORY:APPCOOLNAME${{ steps.generate-tag.outputs.new_tag }}-$TIMESTAMP
+        - name: Generate new versioned tag
+          id: generate-tag
+          run: |
+            LATEST_VERSION=${{ steps.extract-version-number.outputs.version_number }}
+            if [ -z "$LATEST_VERSION" ]; then
+              NEW_TAG="v1"
+            else
+              # Extract the version number and increment it
+              VERSION_NUMBER=$(echo "$LATEST_VERSION" | sed 's/v//')
+              NEXT_VERSION=$((VERSION_NUMBER + 1))
+              NEW_TAG="v$NEXT_VERSION"
+            fi
+            echo "::set-output name=new_tag::$NEW_TAG"
+        - name: Build, tag, and push image to Amazon ECR
+          id: build-image
+          env:
+            ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+            ECR_REPOSITORY: "bw-repository"
+          run: |
+            TIMESTAMP=${{ steps.set-timestamp.outputs.timestamp }}
+            docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:APPCOOLNAME${{ steps.generate-tag.outputs.new_tag }}-$TIMESTAMP . 
+            docker push $ECR_REGISTRY/$ECR_REPOSITORY:APPCOOLNAME${{ steps.generate-tag.outputs.new_tag }}-$TIMESTAMP
 
 
 
