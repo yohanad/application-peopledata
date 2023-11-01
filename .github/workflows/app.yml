@@ -56,7 +56,7 @@ jobs:
         - name: Get latest version from ECR
           id: get-latest-version
           run: |
-            LATEST_TAG=$(aws ecr describe-images   --repository-name bw-repository --query 'reverse(sort_by(imageDetails[?starts_with(imageTags[0], `APPCOOLNAME`)], &imagePushedAt))[0].{imageTag:imageTags[0]}' --output text)
+            LATEST_TAG=$(  --query 'reverse(sort_by(imageDetails[?starts_with(imageTags[0], `APPCOOLNAME`)], &imagePushedAt))[0].imageTags[0]' --output text)
             echo "::set-output name=latest_tag::$LATEST_TAG"
 
         - name: Set up Python
@@ -66,21 +66,8 @@ jobs:
 
         - name: Run Python script
           run: |
-            python - <<EOF
-            import json
-
-            # Your JSON string
-            json_string = ${{ steps.get-latest-version.latest_tag }}
-
-            # Parse the JSON string
-            data = json.loads(json_string)
-
-            # Extract version number from the imageTag
-            image_tag = data["imageTag"]
-            version = image_tag.split("v")[1].split("-")[0]
-
-            print("Version:", version)
-            EOF
+             echo 'APPCOOLNAMEv1-20231031225443'
+             python -c "import re; import sys; print(re.search(r'v(\d+)', sys.stdin.read()).group(1))"
 
         # - name: Generate new versioned tag
         #   id: generate-tag
